@@ -5,17 +5,16 @@ from time import sleep
 from os import system, name
 from datetime import datetime
 
-
-## function to clear screen
+## Function to clear screen
 def clear():
         if name == "nt":
             system("cls")
         else:
             system("clear")
                                
-## function to convert characters into block font
-## if display errors, verify flat spacing around characters
-## day and month characters not implemented into clock yet
+## Function to convert characters into block font
+## If display errors, verify flat spacing around characters
+## Day and month characters not implemented into clock yet
 def translate(text):
     text = str(text)
     letters = []
@@ -28,13 +27,6 @@ def translate(text):
 
                 	
 LETTERS = {
-#"0":u"""\
-# ██████╗
-#██╔═████╗
-#██║██╔██║
-#████╔╝██║
-#╚██████╔╝
-# ╚═════╝'"",
 "0":u"""\
   __  
  /  \ 
