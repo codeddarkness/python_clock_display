@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8-*-
+VERSION="0.1.3"
 
 from time import sleep
 from os import system, name
@@ -156,14 +157,16 @@ def calculate_time_to_election():
     days = time_left.days
     hours = time_left.seconds // 3600
     minutes = (time_left.seconds % 3600) // 60
+    seconds = time_left.seconds % 60
     
     # Format with leading zeros
     days_str = str(days).zfill(3)  # Allow for hundreds of days
     hours_str = str(hours).zfill(2)
     minutes_str = str(minutes).zfill(2)
+    seconds_str = str(seconds).zfill(2)
     
-    # Return in format days:hours:minutes
-    return "{}:{}:{}".format(days_str, hours_str, minutes_str)
+    # Return in format similar to time (days:minutes:seconds)
+    return "{}:{}:{}:{}".format(days_str, hours_str, minutes_str, seconds_str)
 
 def combined_clock():
     terminal_width = 40  # Estimated width for 320px display
@@ -188,9 +191,6 @@ def combined_clock():
             countdown = calculate_time_to_election()
             countdown_lines = get_text_lines(countdown)
             
-            # Get current date
-            current_date = ctime.strftime("%Y/%m/%d")
-            
             # Print header
             print("\n")
             print(center_text("CURRENT TIME", terminal_width))
@@ -212,13 +212,7 @@ def combined_clock():
                 print(center_text(line, terminal_width))
             
             # Print countdown labels
-            print(center_text("DAYS : HRS : MIN", terminal_width))
-            
-            # Space before date
-            print("\n")
-            
-            # Print current date at bottom
-            print(center_text(current_date, terminal_width))
+            print(center_text("DAYS : HOURS : MIN : SEC", terminal_width))
             
             sleep(0.5)  # Half-second refresh
             

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8-*-
+VERSION="0.1.3"
 
 from time import sleep
 from os import system, name

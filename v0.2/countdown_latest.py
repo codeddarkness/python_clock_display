@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8-*-
+VERSION="0.1.2"
 
 from time import sleep
 from os import system, name
@@ -99,19 +100,19 @@ LETTERS = {
  █ 
    
 """,
+"|":u"""\
+ █ 
+ █ 
+ █ 
+ █ 
+ █ 
+""",
 ".":u"""\
    
    
    
    
  █ 
-""",
-" ":u"""\
-   
-   
-   
-   
-   
 """,
 "?":u"""\
 ███
@@ -202,46 +203,38 @@ def combined_clock():
             countdown = calculate_time_to_election()
             countdown_lines = get_text_lines(countdown)
             
-            # Get current date in block text format
-            year = str(ctime.year)
-            month = str(ctime.month).zfill(2)
-            day = str(ctime.day).zfill(2)
-            # Use single space between segments - more compact display
-            date_str = "{} {} {}".format(year, month, day)
-            date_lines = get_text_lines(date_str)
+            # Get current date
+            current_date = ctime.strftime("%Y/%m/%d")
             
             # Print header
-#            print("\n")
-            print(center_text("CURRENT TIME", terminal_width))
-#            print(center_text("=" * 20, terminal_width))
+            #print("\n")
+            #print(center_text("============= CURRENT TIME =============", terminal_width))
+            print(center_text("============== " + current_date + " ==============", terminal_width))
+            #print(center_text("=" * 20, terminal_width))
             
             # Print time
             for line in time_lines:
                 print(center_text(line, terminal_width))
             
-            # Space between the displays
-            print("\n")
+            # Space between the two displays
+            #print("\n")
             
-            # Print countdown header
-            print(center_text("ELECTION COUNTDOWN", terminal_width))
-#            print(center_text("=" * 20, terminal_width))
+            # Print countdown header and countdown labels
+            #print(center_text("ELECTION COUNTDOWN", terminal_width))
+            print(center_text("========== ELECTION COUNTDOWN ==========", terminal_width))
+            #print(center_text("=" * 40, terminal_width))
             
             # Print countdown
             for line in countdown_lines:
                 print(center_text(line, terminal_width))
             
-#            print(center_text("DAYS : HRS : MIN", terminal_width))
+            #print(center_text("=========== DAYS : HRS : MIN ===========", terminal_width))
+            print(center_text("       [ DAYS ]     [ HRS ]     [ MIN ]          ", terminal_width))
+            # Print countdown labels
+            #print(center_text("DAYS : HRS : MIN", terminal_width))
             
-            # Space before date
-            print("\n")
-            
-            # Print date header
-#            print(center_text("TODAY'S DATE", terminal_width))
-#            print(center_text("=" * 12, terminal_width))
-            
-            # Print date in block text
-#            for line in date_lines:
-#                print(center_text(line, terminal_width))
+            # Print current date at bottom
+            #print(center_text(current_date, terminal_width))
             
             sleep(0.5)  # Half-second refresh
             

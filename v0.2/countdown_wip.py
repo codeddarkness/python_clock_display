@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8-*-
+VERSION="0.1.2"
 
 from time import sleep
 from os import system, name
@@ -214,7 +215,7 @@ def combined_clock():
                 print(center_text(line, terminal_width))
             
             # Print countdown labels
-            print(center_text("DAYS : HRS : MIN", terminal_width))
+            print(center_text("DAYS : HOURS : MINUTES : SECONDS", terminal_width))
             
             # Space before date
 #            print("\n")
