@@ -1,13 +1,8 @@
 #!/bin/bash
 VERSION="1.0.0"
 # Script to manage git versioning for the Block Clock project
-# Usage: ./git_version_script.sh [version_number]
-# Example: ./git_version_script.sh 0.1
-# Features:
-# - Skips versions that have already been processed
-# - Automatically cleans and commits between versions
-# - Handles errors with proper rollback
-# - Supports running all versions in sequence
+# Usage: ./git_version_manager.sh [version_number]
+# Example: ./git_version_manager.sh 0.1
 
 # Error handling function
 handle_error() {
@@ -41,71 +36,11 @@ get_current_branch() {
     git branch | grep '^*' | cut -d' ' -f2
 }
 
-# Check if a branch exists locally or remotely
-branch_exists() {
-    # Check if branch exists locally
-    if git show-ref --verify --quiet refs/heads/$1; then
-        return 0  # Branch exists
-    fi
-    
-    # Check if branch exists remotely
-    if git ls-remote --exit-code --heads origin $1 >/dev/null 2>&1; then
-        return 0  # Branch exists
-    fi
-    
-    return 1  # Branch doesn't exist
-}
-
-# Check if a tag exists
-tag_exists() {
-    git rev-parse --verify --quiet refs/tags/$1 >/dev/null 2>&1
-    return $?
-}
-
-# Clean up working directory and commit changes
-cleanup_and_commit() {
-    # Clean up working directory
-    echo "Cleaning up working directory..."
-    for file in $(find . -maxdepth 1 -name "*.py"); do
-        rm "$file" 2>/dev/null
-    done
-    
-    # Commit the cleanup if there are changes
-    if [ -n "$(git status --porcelain)" ]; then
-        echo "Committing cleanup changes..."
-        git add -A
-        git commit -m "Clean up after version $1" || handle_error "Failed to commit cleanup"
-        
-        # Push changes if we have a remote
-        if git remote | grep -q "origin"; then
-            echo "Pushing cleanup changes..."
-            git push || handle_error "Failed to push cleanup changes"
-        fi
-    else
-        echo "No changes to commit after cleanup"
-    fi
-}
-
 # Check if version is provided
 if [ $# -lt 1 ]; then
     echo "Usage: $0 [version_number]"
     echo "Example: $0 0.1"
-    echo "         $0 all"
     exit 1
-fi
-
-# Check if we can continue safely
-if [ -n "$(git status --porcelain)" ]; then
-    echo "Working directory is not clean."
-    read -p "Do you want to commit all current changes before proceeding? (y/n) " -n 1 -r
-    echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        git add -A
-        git commit -m "Auto-commit changes before versioning"
-    else
-        echo "Please commit or stash your changes manually, then run the script again."
-        exit 1
-    fi
 fi
 
 # Initialize variables
@@ -113,17 +48,11 @@ VERSION_NUM=$1
 LAST_COMMAND=""
 LAST_BRANCH=$(get_current_branch)
 SCRIPT_PATH="$0"
-SUPPORT_FILES="setup_block_clock.sh README.md git_version_script.sh version_script.sh check_git_commands.sh"
-
-# Make sure we're on main branch to start
-git checkout main 2>/dev/null || handle_error "Failed to switch to main branch"
+SUPPORT_FILES="setup_block_clock.sh README.md git_version_manager.sh version_script.sh"
 
 # Process all versions in sequence if all is specified
 if [ "$VERSION_NUM" = "all" ]; then
-    # Define versions to process
-    VERSIONS=("0.1" "0.2" "0.3" "1.1" "1.2")
-    
-    for ver in "${VERSIONS[@]}"; do
+    for ver in 0.1 0.2 0.3 1.0 1.1 1.2; do
         echo "Processing version $ver..."
         $SCRIPT_PATH $ver
         RESULT=$?
@@ -138,18 +67,10 @@ fi
 
 echo "=== Starting versioning process for v$VERSION_NUM ==="
 
-# Check if this version has already been processed
-if tag_exists "v$VERSION_NUM"; then
-    echo "Version $VERSION_NUM already has a tag, checking branches..."
-    if branch_exists "dev/version_$VERSION_NUM" && branch_exists "stable/version_$VERSION_NUM"; then
-        echo "Development and stable branches already exist for version $VERSION_NUM"
-        echo "Skipping this version as it appears to be already processed."
-        echo "To force reprocessing, delete the tag and branches first:"
-        echo "  git tag -d v$VERSION_NUM"
-        echo "  git branch -D dev/version_$VERSION_NUM stable/version_$VERSION_NUM"
-        echo "  git push origin :refs/tags/v$VERSION_NUM :refs/heads/dev/version_$VERSION_NUM :refs/heads/stable/version_$VERSION_NUM"
-        exit 0
-    fi
+# Make sure we're working with a clean state
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Working directory is not clean. Please commit or stash changes first."
+    exit 1
 fi
 
 # Create and switch to development branch
@@ -162,22 +83,7 @@ echo "Copying version $VERSION_NUM files to project root..."
 if [ -d "v$VERSION_NUM" ]; then
     cp v$VERSION_NUM/* . 2>/dev/null || handle_error "Failed to copy files"
 else
-    echo "Warning: Version directory v$VERSION_NUM not found, looking for files in other locations..."
-    
-    # Try to find matching files elsewhere
-    if [ "$VERSION_NUM" = "0.1" ]; then
-        cp block_clock.py clock_v1.py pi_clock.py . 2>/dev/null || true
-    elif [ "$VERSION_NUM" = "0.2" ]; then
-        cp countdown*.py . 2>/dev/null || true
-    elif [ "$VERSION_NUM" = "0.3" ]; then
-        cp block_countdown_switch.py time_countdown_*.py toggle_time_countdown.py . 2>/dev/null || true
-    fi
-    
-    # Check if we found any files
-    if [ -z "$(ls -A *.py 2>/dev/null)" ]; then
-        echo "Error: No Python files found for version $VERSION_NUM"
-        handle_error "No files to commit for this version"
-    fi
+    echo "Version directory v$VERSION_NUM not found, skipping copy"
 fi
 
 # Add files to git
@@ -192,23 +98,9 @@ for file in $SUPPORT_FILES; do
     fi
 done
 
-# Add README if present
-if [ -f "v$VERSION_NUM/README.md" ]; then
-    cp "v$VERSION_NUM/README.md" "README.md" 2>/dev/null || true
-elif [ -f "readme_v${VERSION_NUM/./}".md ]; then
-    cp "readme_v${VERSION_NUM/./}".md "README.md" 2>/dev/null || true
-fi
-
-git add README.md 2>/dev/null || true
-
 # Commit changes
 echo "Committing changes for version $VERSION_NUM..."
-if [ -n "$(git status --porcelain)" ]; then
-    git commit -m "Add version $VERSION_NUM files" || handle_error "Failed to commit changes"
-else
-    echo "No changes to commit. Did you copy the right files?"
-    handle_error "No changes to commit for this version"
-fi
+git commit -m "Add version $VERSION_NUM files" || handle_error "Failed to commit changes"
 
 # Create version tag
 echo "Creating tag for version $VERSION_NUM..."
@@ -268,7 +160,10 @@ echo "Stable branch: stable/version_$VERSION_NUM"
 echo "Tag: v$VERSION_NUM"
 echo "All changes have been merged into main"
 
-# Clean up and commit before moving to the next version
-cleanup_and_commit $VERSION_NUM
+# Clean up working directory
+echo "Cleaning up working directory..."
+for file in $(find . -maxdepth 1 -name "*.py"); do
+    rm "$file" 2>/dev/null
+done
 
 echo "Done!"
