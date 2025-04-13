@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8-*-
-VERSION="0.1.2"
+VERSION="0.1.3"
 
 from time import sleep
 from os import system, name
@@ -99,6 +99,13 @@ LETTERS = {
    
  █ 
    
+""",
+"|":u"""\
+ █ 
+ █ 
+ █ 
+ █ 
+ █ 
 """,
 ".":u"""\
    
@@ -208,41 +215,40 @@ def combined_clock():
             month = str(ctime.month).zfill(2)
             day = str(ctime.day).zfill(2)
             # Use single space between segments - more compact display
-            date_str = "{} {} {}".format(year, month, day)
+            date_str = "{}.{}.{}".format(year, month, day)
             date_lines = get_text_lines(date_str)
             
             # Print header
-#            print("\n")
+            print("\n")
             print(center_text("CURRENT TIME", terminal_width))
-#            print(center_text("=" * 20, terminal_width))
+            #print(center_text("=" * 12, terminal_width))
             
             # Print time
             for line in time_lines:
                 print(center_text(line, terminal_width))
             
             # Space between the displays
-            print("\n")
+            #print("\n")
             
             # Print countdown header
-            print(center_text("ELECTION COUNTDOWN", terminal_width))
-#            print(center_text("=" * 20, terminal_width))
+            print(center_text("ELECTION COUNTDOWN   DAYS : HRS : MIN", terminal_width))
+            #print(center_text("=" * 18, terminal_width))
             
             # Print countdown
             for line in countdown_lines:
                 print(center_text(line, terminal_width))
             
-#            print(center_text("DAYS : HRS : MIN", terminal_width))
             
             # Space before date
-            print("\n")
+            #print("\n")
             
             # Print date header
-#            print(center_text("TODAY'S DATE", terminal_width))
-#            print(center_text("=" * 12, terminal_width))
+            print(center_text("TODAY'S DATE", terminal_width))
+            #print(center_text("=" * 12, terminal_width))
             
             # Print date in block text
-#            for line in date_lines:
-#                print(center_text(line, terminal_width))
+            for line in date_lines:
+                print(center_text(line, terminal_width))
             
             sleep(0.5)  # Half-second refresh
             

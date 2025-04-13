@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8-*-
-VERSION="0.1.2"
+VERSION="0.1.3"
 
 from time import sleep
 from os import system, name
@@ -109,8 +109,8 @@ LETTERS = {
 """,
 }
 
-## Function to convert characters into block font and return as lines
-def get_text_lines(text):
+## Function to convert characters into block font
+def translate(text, centered=True):
     text = str(text)
     letters = []
     
@@ -124,7 +124,7 @@ def get_text_lines(text):
     # Calculate the height (all characters are 5 lines tall)
     height = 5
     
-    # Generate lines
+    # Generate lines with centering if requested
     lines = []
     for i in range(height):
         line = ""
@@ -132,16 +132,25 @@ def get_text_lines(text):
             line += letter.splitlines()[i] + " "  # Add extra space between characters
         lines.append(line)
     
-    return lines
-
-## Function to center text
-def center_text(text, width=40):
-    # Calculate padding for centering
-    padding = (width - len(text)) // 2
-    if padding > 0:
-        return " " * padding + text
-    else:
-        return text
+    # Center text if requested (helps with screen filling)
+    if centered:
+        terminal_width = 40  # Estimate for 320px width TFT display
+        centered_lines = []
+        for line in lines:
+            # Calculate padding for centering
+            padding = (terminal_width - len(line)) // 2
+            if padding > 0:
+                centered_lines.append(" " * padding + line)
+            else:
+                centered_lines.append(line)
+        lines = centered_lines
+    
+    # Print the output
+    for line in lines:
+        print(line)
+    
+    # Add empty lines to better fill the screen
+    print("\n\n")
 
 def calculate_time_to_election():
     # Election date: November 7, 2028
@@ -165,63 +174,49 @@ def calculate_time_to_election():
     minutes_str = str(minutes).zfill(2)
     seconds_str = str(seconds).zfill(2)
     
-    # Return in format days:hours:minutes
+    # Return in format similar to time (days:hours:minutes:seconds)
     return "{}:{}:{}:{}".format(days_str, hours_str, minutes_str, seconds_str)
 
-def combined_clock():
-    terminal_width = 40  # Estimated width for 320px display
+def clock():
+    show_clock = True  # Toggle between clock and countdown
+    toggle_count = 0   # Counter to control switching
     
     while True:
         try:
             clear()
             
-            # Get current time
-            ctime = datetime.now()
-            values = [ctime.hour, ctime.minute, ctime.second]
-            join_values = []
-            for value in values:
-                svalue = str(value)
-                svalue = svalue if len(svalue) == 2 else "0" + svalue
-                join_values.append(svalue)
+            # Print header with current mode
+            if show_clock:
+                print("\n")  # Extra lines to push content down
+                print("[ CURRENT TIME ]".upper())
+                #print("==========================")
+                
+                # Show current time
+                ctime = datetime.now()
+                values = [ctime.hour, ctime.minute, ctime.second]
+                join_values = []
+                for value in values:
+                    svalue = str(value)
+                    svalue = svalue if len(svalue) == 2 else "0" + svalue
+                    join_values.append(svalue)
+                
+                translate(":".join(join_values), centered=True)
+            else:
+                print("\n")  # Extra lines to push content down
+                print("[ ELECTION COUNTDOWN ]".upper())
+                #print("=======================")
+                
+                # Show countdown
+                countdown = calculate_time_to_election()
+                translate(countdown, centered=True)
+                
+                print("[ DAYS : HOURS : MIN : SEC ]")
             
-            time_str = ":".join(join_values)
-            time_lines = get_text_lines(time_str)
-            
-            # Get countdown
-            countdown = calculate_time_to_election()
-            countdown_lines = get_text_lines(countdown)
-            
-            # Get current date
-            current_date = ctime.strftime("%Y/%m/%d")
-            
-            # Print header
-            print("\n")
-            print(center_text("CURRENT TIME", terminal_width))
-            print(center_text("=" * 20, terminal_width))
-            
-            # Print time
-            for line in time_lines:
-                print(center_text(line, terminal_width))
-            
-            # Space between the two displays
-            print("\n")
-            
-            # Print countdown header
-            print(center_text("ELECTION COUNTDOWN", terminal_width))
-            print(center_text("=" * 20, terminal_width))
-            
-            # Print countdown
-            for line in countdown_lines:
-                print(center_text(line, terminal_width))
-            
-            # Print countdown labels
-            print(center_text("DAYS : HRS : MIN", terminal_width))
-            
-            # Space before date
-#            print("\n")
-            
-            # Print current date at bottom
-#            print(center_text(current_date, terminal_width))
+            # Increment counter and toggle display every 20 cycles (10 seconds)
+            toggle_count += 1
+            if toggle_count >= 20:
+                show_clock = not show_clock
+                toggle_count = 0
             
             sleep(0.5)  # Half-second refresh
             
@@ -235,4 +230,4 @@ if __name__ == "__main__":
     print(" Press Ctrl+C to exit ")
     sleep(2)
     clear()
-    combined_clock()
+    clock()
