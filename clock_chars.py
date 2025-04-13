@@ -1,8 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8-*-
-VERSION="1.1.0"
+VERSION="1.2.0"
 
 # Character set library for block clock displays
+
+# Complete set of characters for all charsets
+COMMON_CHARS = [
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    ":", "-", ".", " ", "|", "?", "*",
+    "d", "h", "m", "s"
+]
 
 # Original block characters (from block_clock.py)
 BLOCK_CHARS = {
@@ -248,24 +255,42 @@ ASCII_CHARS = {
  |_ )
   /_)
  (_) """,
-"a":u"""\
- __ _ 
-/ _` |
-\__,_|
-      
-      """,
-"p":u"""\
- _ __ 
-| '_ \\
-| .__/
-|_|   
-      """,
+"*":u"""\
+_/|\_
+ /|\ 
+_/|\_
+ /|\ 
+     """,
+"|":u"""\
+ | 
+ | 
+ | 
+ | 
+ | """,
+"d":u"""\
+   
+   
+ d 
+   
+   """,
+"h":u"""\
+   
+   
+ h 
+   
+   """,
 "m":u"""\
- _ __  
-| '  \\ 
-|_|_|_|
-       
-       """,
+   
+   
+ m 
+   
+   """,
+"s":u"""\
+   
+   
+ s 
+   
+   """,
 }
 
 # Unicode block characters (from clock_v1.py)
@@ -375,6 +400,20 @@ UNICODE_BLOCK_CHARS = {
    ╚═╝  
    ██╗  
    ╚═╝  """,
+"*":u"""\
+██╗ ██╗ ██╗
+╚█████████╝
+███████████
+╚█████████╝
+██╗ ██╗ ██╗
+╚═╝ ╚═╝ ╚═╝""",
+"|":u"""\
+██╗
+██║
+██║
+██║
+██║
+╚═╝""",
 "d":u"""\
    
    
@@ -404,6 +443,20 @@ UNICODE_BLOCK_CHARS = {
    
    """,
 }
+
+# Ensure all character sets have all characters
+def ensure_complete_charset(charset, default_char="?"):
+    """Makes sure the charset contains all characters in COMMON_CHARS"""
+    for char in COMMON_CHARS:
+        if char not in charset:
+            # If character is missing, use the question mark or default
+            charset[char] = charset.get(default_char, "?")
+    return charset
+
+# Ensure all character sets are complete
+BLOCK_CHARS = ensure_complete_charset(BLOCK_CHARS)
+ASCII_CHARS = ensure_complete_charset(ASCII_CHARS)
+UNICODE_BLOCK_CHARS = ensure_complete_charset(UNICODE_BLOCK_CHARS)
 
 def get_character_set(name):
     """Return character set dictionary by name"""
