@@ -2,3 +2,13 @@ Git command failed: git branch -D remotes/origin/dev/version_0.1_2
 Git command failed: git push origin --delete remotes/origin/dev/version_0.1_2
 Git command failed: git branch -D remotes/origin/stable/version_0.1_2
 Git command failed: git push origin --delete remotes/origin/stable/version_0.1_2
+Git command failed: git branch -D remotes/origin/dev/version_0.2_1
+Git command failed: git push origin --delete remotes/origin/dev/version_0.2_1
+Git command failed: git branch -D remotes/origin/stable/version_0.2_1
+Git command failed: git push origin --delete remotes/origin/stable/version_0.2_1
+Git command failed: git checkout dev/version_0.2
+Git command failed: git branch -D remotes/origin/dev/version_0.3_1
+Git command failed: git push origin --delete remotes/origin/dev/version_0.3_1
+Git command failed: git branch -D remotes/origin/stable/version_0.3_1
+Git command failed: git push origin --delete remotes/origin/stable/version_0.3_1
+Git command failed: git checkout dev/version_0.3
