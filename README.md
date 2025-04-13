@@ -1,4 +1,4 @@
-# Block Clock (v1.1.0)
+# Block Clock (v1.2.0)
 
 A customizable terminal-based clock program with multiple display modes, character sets, and visual options.
 
@@ -6,8 +6,7 @@ A customizable terminal-based clock program with multiple display modes, charact
 
 ### Display Modes
 - **Combined Display:** Shows time, date, and election countdown together on one screen
-- **Cycle Display:** Automatically rotates between time, date, and countdown views
-- **Single Display:** Shows one view at a time (time, date, or countdown)
+- **Focused Display:** Shows one view at a time (time, date, or countdown) with option for auto-cycling
 
 ### Character Sets
 - **Block:** Simple ASCII block characters
@@ -17,15 +16,17 @@ A customizable terminal-based clock program with multiple display modes, charact
 ### Visual Customization
 - **Multiple color schemes** (change with Up/Down arrow keys)
 - **Text alignment options:** left, center, right (toggle with 'A' key)
-- **Customizable layouts** (change with Left/Right arrow keys)
+- **Auto-cycling option** for focused views (toggle with 'F' key)
 
 ### Navigation Controls
-- **Left/Right arrow keys:** Change display layout or cycle through views
+- **Left/Right arrow keys:** Toggle between combined and focused layouts
 - **Up/Down arrow keys:** Change display colors
-- **'C' key:** Toggle between character sets
-- **'A' key:** Toggle between text alignments
-- **'?' key:** Show help screen
-- **'Q' key or Ctrl+C:** Exit the program
+- **T/D/C keys:** Switch to Time/Date/Countdown view in focused mode
+- **F key:** Toggle auto-cycling in focused mode
+- **A key:** Cycle through text alignments
+- **S key:** Cycle through character sets
+- **? key:** Show help screen
+- **Q key or Ctrl+C:** Exit the program
 
 ### Election Countdown
 The program includes a countdown to the next election (currently set to November 7, 2028). This is configurable in the code.
@@ -53,11 +54,20 @@ If you used the automatic installation method, you can uninstall with:
 sudo /usr/local/bin/blockclock/uninstall_block_clock.sh
 ```
 
-## Files
+## Project Structure
+
 - **block_clock.py:** Main program file with the interactive clock interface
 - **clock_chars.py:** Library file containing different character sets
 - **setup_block_clock.sh:** Installation script for setting up as a system service
 - **README.md:** This documentation file
+- **v1/:** Directory containing version 1.1.0 of the clock
+- **v2/:** Directory containing version 1.2.0 of the clock (current)
+
+## Version History
+
+- **v0.5.0:** Original source repository
+- **v1.1.0:** First consolidated version with multiple character sets and layouts
+- **v1.2.0:** Streamlined version with improved navigation and simplified layouts
 
 ## Requirements
 - Python 3
@@ -67,10 +77,11 @@ sudo /usr/local/bin/blockclock/uninstall_block_clock.sh
 ## Customization
 You can customize the program by modifying the constants at the top of the `block_clock.py` file:
 - `CHAR_SET`: Default character set to use
-- `LAYOUT`: Default layout mode
+- `LAYOUT`: Default layout mode ("combined" or "focused")
 - `ALIGNMENT`: Default text alignment
 - `COLOR_PAIR`: Default color scheme
-- `CYCLE_DELAY`: Number of half-second cycles before switching views in cycle mode
+- `CYCLE_DELAY`: Number of half-second cycles before switching views in auto-cycle mode
+- `AUTO_CYCLE`: Whether to automatically cycle through views in focused mode
 - `ELECTION_DATE`: Target date for countdown timer
 
 ## Troubleshooting
@@ -90,10 +101,3 @@ This project is open-source and available under the MIT License.
 
 ## Credits
 This program combines and extends multiple clock implementations with character set styling from various sources.
-
-## Future Improvements
-- Additional character sets
-- User-configurable countdown targets
-- Weather display integration
-- Custom color schemes
-- Configuration file support

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8-*-
-VERSION="1.1.0"
+VERSION="1.2.0"
 
 import os
 import sys
@@ -14,10 +14,11 @@ import clock_chars
 TERMINAL_WIDTH = 80
 TERMINAL_HEIGHT = 24
 CHAR_SET = "block"      # Default character set
-LAYOUT = "combined"     # Default layout: combined, cycle, or single
+LAYOUT = "combined"     # Default layout: combined or focused
 ALIGNMENT = "center"    # Default alignment: left, center, right
 COLOR_PAIR = 1          # Default color pair
 CYCLE_DELAY = 10        # Number of half-second cycles before switching views in cycle mode
+AUTO_CYCLE = False      # Whether to automatically cycle through views in focused mode
 ELECTION_DATE = datetime(2028, 11, 7, 0, 0, 0)  # Election date
 
 # Initialize curses
@@ -91,45 +92,48 @@ def get_text_lines(text, charset_name=None):
     
     return lines
 
-def render_text(y, text, charset_name=None, alignment=None):
-    """Render text at the specified y position with given charset and alignment"""
+def render_text(y, text, is_header=False, charset_name=None, alignment=None):
+    """Render text at the specified y position with given charset and alignment
+    
+    Consolidated function handling both headers and block characters.
+    """
     if charset_name is None:
         charset_name = CHAR_SET
     if alignment is None:
         alignment = ALIGNMENT
-        
-    lines = get_text_lines(text, charset_name)
     
-    for i, line in enumerate(lines):
-        # Apply alignment
+    # For headers, render as plain text with bold attribute
+    if is_header:
         if alignment == "center":
-            x = (TERMINAL_WIDTH - len(line)) // 2
+            x = (TERMINAL_WIDTH - len(text)) // 2
         elif alignment == "right":
-            x = TERMINAL_WIDTH - len(line) - 1
+            x = TERMINAL_WIDTH - len(text) - 1
         else:  # "left"
             x = 1
             
         x = max(0, x)  # Ensure x doesn't go negative
+        stdscr.addstr(y, x, text, curses.color_pair(COLOR_PAIR) | curses.A_BOLD)
+        return y + 1
+    
+    # For block characters, render each line
+    else:
+        lines = get_text_lines(text, charset_name)
         
-        # Render the line with current color
-        stdscr.addstr(y + i, x, line, curses.color_pair(COLOR_PAIR))
-        
-    return y + len(lines)
-
-def print_header(y, text, alignment=None):
-    """Print a header text"""
-    if alignment is None:
-        alignment = ALIGNMENT
-        
-    if alignment == "center":
-        x = (TERMINAL_WIDTH - len(text)) // 2
-    elif alignment == "right":
-        x = TERMINAL_WIDTH - len(text) - 1
-    else:  # "left"
-        x = 1
-        
-    stdscr.addstr(y, x, text, curses.color_pair(COLOR_PAIR) | curses.A_BOLD)
-    return y + 1
+        for i, line in enumerate(lines):
+            # Apply alignment
+            if alignment == "center":
+                x = (TERMINAL_WIDTH - len(line)) // 2
+            elif alignment == "right":
+                x = TERMINAL_WIDTH - len(line) - 1
+            else:  # "left"
+                x = 1
+                
+            x = max(0, x)  # Ensure x doesn't go negative
+            
+            # Render the line with current color
+            stdscr.addstr(y + i, x, line, curses.color_pair(COLOR_PAIR))
+            
+        return y + len(lines)
 
 def get_current_time():
     """Get current time formatted as HH:MM:SS"""
@@ -174,23 +178,22 @@ def calculate_time_to_election():
     # Return in format days:hours:minutes:seconds
     return "{}:{}:{}:{}".format(days_str, hours_str, minutes_str, seconds_str)
 
-def display_time(y=2):
-    """Display the current time"""
-    y = print_header(y, "CURRENT TIME")
-    y = render_text(y + 1, get_current_time())
-    return y + 1
-
-def display_date(y=2):
-    """Display the current date"""
-    y = print_header(y, "TODAY'S DATE")
-    y = render_text(y + 1, get_current_date())
-    return y + 1
-
-def display_countdown(y=2):
-    """Display the election countdown"""
-    y = print_header(y, "ELECTION COUNTDOWN")
-    y = render_text(y + 1, calculate_time_to_election())
-    y = print_header(y + 1, "DAYS : HRS : MIN : SEC")
+def display_view(view_type, y=2):
+    """Display a specific view (time, date, or countdown)
+    
+    Consolidated function to display any of the three view types.
+    """
+    if view_type == "time":
+        y = render_text(y, "CURRENT TIME", is_header=True)
+        y = render_text(y + 1, get_current_time())
+    elif view_type == "date":
+        y = render_text(y, "TODAY'S DATE", is_header=True)
+        y = render_text(y + 1, get_current_date())
+    elif view_type == "countdown":
+        y = render_text(y, "ELECTION COUNTDOWN", is_header=True)
+        y = render_text(y + 1, calculate_time_to_election())
+        y = render_text(y + 1, "DAYS : HRS : MIN : SEC", is_header=True)
+    
     return y + 1
 
 def display_combined():
@@ -199,59 +202,73 @@ def display_combined():
     
     # Get current date for header
     cdate = datetime.now().strftime("%Y/%m/%d")
-    y = print_header(y, "============== " + cdate + " ==============")
+    y = render_text(y, "============== " + cdate + " ==============", is_header=True)
     
     # Display time
     y = render_text(y + 1, get_current_time())
     
     # Display countdown header
-    y = print_header(y + 2, "========== ELECTION COUNTDOWN ==========")
+    y = render_text(y + 2, "========== ELECTION COUNTDOWN ==========", is_header=True)
     
     # Display countdown
     y = render_text(y + 1, calculate_time_to_election())
     
     # Display countdown labels
-    y = print_header(y + 1, "       [ DAYS ]     [ HRS ]     [ MIN ]     [ SEC ]")
+    y = render_text(y + 1, "       [ DAYS ]     [ HRS ]     [ MIN ]     [ SEC ]", is_header=True)
     
     # Display date at the bottom
-    y = print_header(y + 2, "TODAY'S DATE")
+    y = render_text(y + 2, "TODAY'S DATE", is_header=True)
     y = render_text(y + 1, get_current_date())
 
 def display_help():
     """Display help information"""
+    # Clear screen for help menu
+    stdscr.clear()
+    
     y = 1
     
     help_text = [
         "BLOCK CLOCK HELP",
         "--------------",
         "Navigation:",
-        "  Left/Right Arrow Keys: Change display layout",
-        "  Up/Down Arrow Keys: Change display color",
-        "  C: Cycle through character sets",
+        "  L/R Arrows: Change between combined and focused layouts",
+        "  U/D Arrows: Change display color",
+        "  T/D/C: Switch to Time/Date/Countdown view in focused mode",
+        "  F: Toggle auto-cycling in focused mode",
         "  A: Cycle through text alignments (left, center, right)",
+        "  S: Cycle through character sets",
         "  Q or Ctrl+C: Quit the program",
         "",
         "Layouts:",
         "  Combined: Shows time, date, and countdown together",
-        "  Cycle: Automatically cycles through time, date, and countdown",
-        "  Single: Shows only one display at a time, use Left/Right to change",
+        "  Focused: Shows one display with option to auto-cycle",
         "",
         "Current Settings:",
         f"  Character Set: {CHAR_SET}",
         f"  Layout: {LAYOUT}",
+        f"  Auto-Cycle: {AUTO_CYCLE}",
         f"  Alignment: {ALIGNMENT}",
         f"  Color: {COLOR_PAIR}",
         "",
         "Press any key to return..."
     ]
     
+    # Display help text
     for line in help_text:
         stdscr.addstr(y, 2, line, curses.color_pair(COLOR_PAIR))
         y += 1
+    
+    # Update the screen
+    stdscr.refresh()
+    
+    # Wait for any key - disable nodelay mode temporarily to make getch() blocking
+    stdscr.nodelay(False)
+    stdscr.getch()
+    stdscr.nodelay(True)
 
 def main(screen):
     """Main function"""
-    global stdscr, TERMINAL_WIDTH, TERMINAL_HEIGHT, CHAR_SET, LAYOUT, ALIGNMENT, COLOR_PAIR
+    global stdscr, TERMINAL_WIDTH, TERMINAL_HEIGHT, CHAR_SET, LAYOUT, ALIGNMENT, COLOR_PAIR, AUTO_CYCLE
     
     # Save screen object globally
     stdscr = screen
@@ -293,27 +310,17 @@ def main(screen):
             # Handle different layouts
             if LAYOUT == "combined":
                 display_combined()
-            elif LAYOUT == "cycle":
-                if cycle_count == 0:
+            else:  # "focused"
+                # Handle auto-cycling if enabled
+                if AUTO_CYCLE and cycle_count == 0:
                     current_view = (current_view + 1) % len(views)
                 
                 # Display the current view
-                if views[current_view] == "time":
-                    display_time()
-                elif views[current_view] == "date":
-                    display_date()
-                else:  # "countdown"
-                    display_countdown()
-                    
-                # Increment cycle counter
-                cycle_count = (cycle_count + 1) % CYCLE_DELAY
-            else:  # "single"
-                if views[current_view] == "time":
-                    display_time()
-                elif views[current_view] == "date":
-                    display_date()
-                else:  # "countdown"
-                    display_countdown()
+                display_view(views[current_view])
+                
+                # Increment cycle counter if auto-cycle is enabled
+                if AUTO_CYCLE:
+                    cycle_count = (cycle_count + 1) % CYCLE_DELAY
             
             # Display footer with key information
             footer_text = "Press '?' for help or 'Q' to quit"
@@ -333,32 +340,17 @@ def main(screen):
             if key == ord('q') or key == ord('Q'):
                 break
             elif key == ord('?'):
-                stdscr.clear()
                 display_help()
-                stdscr.refresh()
-                # Wait for any key
-                stdscr.nodelay(False)
-                stdscr.getch()
-                stdscr.nodelay(True)
-            elif key == curses.KEY_LEFT:
-                # Change layout or view
-                if LAYOUT == "single":
-                    current_view = (current_view - 1) % len(views)
-                else:
-                    LAYOUT = {"combined": "single", "single": "cycle", "cycle": "combined"}[LAYOUT]
-            elif key == curses.KEY_RIGHT:
-                # Change layout or view
-                if LAYOUT == "single":
-                    current_view = (current_view + 1) % len(views)
-                else:
-                    LAYOUT = {"combined": "cycle", "cycle": "single", "single": "combined"}[LAYOUT]
+            elif key == curses.KEY_LEFT or key == curses.KEY_RIGHT:
+                # Toggle between combined and focused layouts
+                LAYOUT = "focused" if LAYOUT == "combined" else "combined"
             elif key == curses.KEY_UP:
-                # Change color
+                # Change color (next)
                 COLOR_PAIR = (COLOR_PAIR % len(color_pairs)) + 1
             elif key == curses.KEY_DOWN:
-                # Change color
+                # Change color (previous)
                 COLOR_PAIR = (COLOR_PAIR - 2) % len(color_pairs) + 1
-            elif key == ord('c') or key == ord('C'):
+            elif key == ord('s') or key == ord('S'):
                 # Cycle through character sets
                 charsets = clock_chars.get_available_charsets()
                 current_idx = charsets.index(CHAR_SET) if CHAR_SET in charsets else 0
@@ -366,6 +358,22 @@ def main(screen):
             elif key == ord('a') or key == ord('A'):
                 # Cycle through alignments
                 ALIGNMENT = {"left": "center", "center": "right", "right": "left"}[ALIGNMENT]
+            elif key == ord('f') or key == ord('F'):
+                # Toggle auto-cycling in focused mode
+                AUTO_CYCLE = not AUTO_CYCLE
+                cycle_count = 0  # Reset cycle counter
+            elif key == ord('t') or key == ord('T'):
+                # Switch to time view in focused mode
+                current_view = 0
+                LAYOUT = "focused"
+            elif key == ord('d') or key == ord('D'):
+                # Switch to date view in focused mode
+                current_view = 1
+                LAYOUT = "focused"
+            elif key == ord('c') or key == ord('C'):
+                # Switch to countdown view in focused mode
+                current_view = 2
+                LAYOUT = "focused"
             
             # Short delay to prevent high CPU usage
             time.sleep(0.05)
