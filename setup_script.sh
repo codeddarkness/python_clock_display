@@ -1,4 +1,5 @@
 #!/bin/bash
+VERSION="1.2.0"
 # Script to set up block clock as a service running at boot on the console
 # Run with sudo privileges
 
@@ -24,7 +25,7 @@ mkdir -p $CLOCK_DIR
 # Copy the Python scripts to system location
 echo "Installing clock scripts"
 cp block_clock.py $CLOCK_MAIN
-cp clock_chars_v1.py $CLOCK_CHARS
+cp clock_chars.py $CLOCK_CHARS
 chmod +x $CLOCK_MAIN
 chmod +x $CLOCK_CHARS
 
@@ -80,7 +81,7 @@ else
   cat > /etc/systemd/system/getty@tty1.service.d/override.conf << EOL
 [Service]
 ExecStart=
-ExecStart=-/sbin/agetty --autologin root --noclear %I $TERM
+ExecStart=-/sbin/agetty --autologin $(whoami) --noclear %I $TERM
 EOL
   
   # We'll keep the graphical target but modify the getty
@@ -97,6 +98,7 @@ systemctl enable block-clock.service
 UNINSTALL_SCRIPT="$CLOCK_DIR/uninstall_block_clock.sh"
 cat > $UNINSTALL_SCRIPT << EOL
 #!/bin/bash
+VERSION="1.2.0"
 # Script to remove the block clock service
 # Run with sudo privileges
 
