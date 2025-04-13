@@ -1,42 +1,47 @@
-# Block Clock (v0.3.0)
+# Block Clock (v0.1.0)
 
-This version introduces switching display modes and improved layout management.
+This is the initial version of the Block Clock program featuring basic time display functionality with different character styles.
 
 ## Features
 
-- Auto-switching between time and countdown displays
-- Toggle display functionality
-- Improved block character rendering
-- Centered text display for better visibility
-- Election countdown with days, hours, minutes, and seconds
-- Combined time, date, and countdown displays
+- Real-time digital clock display in terminal
+- Three different character style options:
+  - Simple block characters (block_clock.py)
+  - Unicode block characters (clock_v1.py)
+  - ASCII art characters (pi_clock.py)
+- Clean display with automatic screen refresh
+- Easy to read large character display
 
 ## Files
 
-- **block_countdown_switch.py**: Toggles between clock and countdown
-- **time_countdown_block_clock.py**: Displays time and countdown together
-- **time_countdown_date_block_clock.py**: Shows time, countdown, and date in a single display
-- **toggle_time_countdown.py**: Toggles between displays with a timer
+- **block_clock.py**: Simple block character clock
+- **clock_v1.py**: Unicode-based block character clock
+- **pi_clock.py**: ASCII art character clock
 
 ## Usage
 
-Run any of the scripts directly:
+Run any of the clock scripts directly:
 
 ```
-python toggle_time_countdown.py
+python block_clock.py
 ```
 
 or
 
 ```
-python block_countdown_switch.py
+python clock_v1.py
+```
+
+or
+
+```
+python pi_clock.py
 ```
 
 ## Controls
 
-- **Ctrl+C**: Exit the program
-- Automatic display switching occurs at predefined intervals
+- **Ctrl+C**: Exit the clock
 
 ## Notes
 
-Version 0.3 focuses on improving the user experience by adding auto-switching display modes and better organization of the visual elements. This represents an intermediate step toward the full interactive version.
+This is the first basic implementation of the Block Clock project, providing a simple terminal-based clock display with no additional features like date display or countdown.
